@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolBox 工具合集</title>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #f0f2f5;
+        }
+        html, body {
+            height: 100%;
+        }
+
+        /* 顶部导航栏 */
+        .top-header {
+            width: 100%;
+            height: 70px;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 180px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 26px;
+            font-weight: 700;
+            color: #222;
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #1677ff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+        }
+        .header-menu {
+            display: flex;
+            gap: 35px;
+        }
+        .header-menu a {
+            text-decoration: none;
+            color: #666;
+            font-size: 15px;
+            padding: 25px 0;
+            border-bottom: 2px solid transparent;
+        }
+        .header-menu a.active {
+            color: #1677ff;
+            border-bottom-color: #1677ff;
+            font-weight: 500;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        .header-icon {
+            width: 24px;
+            height: 24px;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+        }
+        .header-icon::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 8px;
+            height: 8px;
+            background: #ff4d4f;
+            border-radius: 50%;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 主体容器 */
+        .main-container {
+            display: flex;
+            width: 100%;
+            min-height: calc(100vh - 110px);
+            padding: 30px 180px;
+            gap: 20px;
+        }
+
+        /* 左侧菜单 */
+        .sidebar {
+            width: 220px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 15px 0;
+            flex-shrink: 0;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-item.active {
+            background: #e8f3ff;
+            color: #1677ff;
+            border-left: 3px solid #1677ff;
+        }
+        .menu-item:hover:not(.active) {
+            background: #f5f7fa;
+        }
+        .menu-item .icon {
+            margin-right: 10px;
+        }
+        .menu-item .arrow {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 右侧内容卡片 */
+        .content-card {
+            flex: 1;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .panel {
+            display: none;
+        }
+        .panel.show {
+            display: block;
+        }
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 20px;
+        }
+        .tips {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        .input-box {
+            margin-bottom: 18px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus {
+            border-color: #1677ff;
+        }
+        textarea {
+            min-height: 100px;
+            resize: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #1677ff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #4096ff;
+        }
+        .btn:active {
+            background: #0d5bd1;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px dashed #e0e0e0;
+            border-radius: 6px;
+            min-height: 80px;
+            font-size: 14px;
+            color: #333;
+            word-break: break-all;
+        }
+        .flex-row {
+            display: flex;
+            gap: 12px;
+        }
+        .flex-row .btn {
+            flex: 1;
+        }
+        .api-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .api-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .api-option.active {
+            background: #1677ff;
+            color: #fff;
+            border-color: #1677ff;
+        }
+        .video-box {
+            width: 100%;
+            height: 350px;
+            background: #000;
+            border-radius: 6px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .video-box iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 底部版权 */
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            padding: 15px 0;
+        }
+
+        /* 手机端适配 */
+        @media (max-width: 1200px) {
+            .top-header {
+                padding: 0 20px;
+            }
+            .main-container {
+                padding: 20px;
+            }
+        }
+        @media (max-width: 768px) {
+            .top-header {
+                padding: 0 15px;
+            }
+            .header-menu {
+                display: none;
+            }
+            .main-container {
+                flex-direction: column;
+                padding: 15px;
+            }
+            .sidebar {
+                width: 100%;
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+            .menu-item {
+                display: inline-flex;
+                white-space: nowrap;
+                padding: 10px 15px;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+            .menu-item.active {
+                border-left: none;
+                border-bottom-color: #1677ff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="top-header">
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-icon">T</div>
+                ToolBox
+            </div>
+            <div class="header-menu">
+                <a href="#" class="active">工具工具</a>
+                <a href="#">享资工具</a>
+                <a href="#">拍货空间</a>
+                <a href="#">防货员路</a>
+                <a href="#">网站菜单</a>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="header-icon">🔔</div>
+            <div class="header-icon">💬</div>
+            <div class="user-avatar">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ToolBox" alt="头像">
+            </div>
+        </div>
+    </div>
+
+    <!-- 主体内容 -->
+    <div class="main-container">
+        <!-- 左侧菜单 -->
+        <div class="sidebar">
+            <div class="menu-item" data-panel="wenku">
+                <span><span class="icon">🏠</span> 文库解析</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="menu-item active" data-panel="watermark">
+                <span><span class="icon">📄</span> 短视频去水印</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="menu-item" data-panel="music">
+                <span><span class="icon">🎵</span> 音乐解析</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="menu-item" data-panel="movie">
+                <span><span class="icon">🎬</span> 影视解析</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="menu-item" data-panel="shorturl">
+                <span><span class="icon">🔗</span> 短链接生成</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="menu-item" data-panel="nickname">
+                <span><span class="icon">✒️</span> 网名生成</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="menu-item" data-panel="query">
+                <span><span class="icon">📱</span> 日常查询</span>
+                <span class="arrow">▼</span>
+            </div>
+        </div>
+
+        <!-- 右侧内容区 -->
+        <div class="content-card">
+            <!-- 文库解析 -->
+            <div class="panel" id="wenku">
+                <div class="panel-title">文库解析</div>
+                <div class="tips">支持公开/VIP文档解析，复制链接即可提取内容</div>
+                <div class="input-box">
+                    <input type="text" id="wenkuUrl" placeholder="粘贴百度文库文档链接">
+                </div>
+                <div class="input-box">
+                    <input type="text" id="wenkuCookie" placeholder="VIP账号Cookie(无VIP可不填)">
+                </div>
+                <button class="btn" onclick="parseWenku()">开始解析文档</button>
+                <div class="result" id="wenkuRes"></div>
+            </div>
+
+            <!-- 短视频去水印 -->
+            <div class="panel show" id="watermark">
+                <div class="panel-title">短视频去水印</div>
+                <div class="tips">抖音/快手/小红书/视频号无水印解析下载，接口失效切换节点</div>
+                <div class="api-select">
+                    <div class="api-option active" data-api="1">接口一</div>
+                    <div class="api-option" data-api="2">接口二</div>
+                    <div class="api-option" data-api="3">接口三</div>
+                </div>
+                <div class="input-box">
+                    <input type="text" id="videoUrl" placeholder="粘贴短视频分享链接">
+                </div>
+                <button class="btn" onclick="parseWaterMark()">解析无水印视频</button>
+                <div class="result" id="videoRes"></div>
+            </div>
+
+            <!-- 音乐解析 -->
+            <div class="panel" id="music">
+                <div class="panel-title">音乐解析</div>
+                <div class="tips">QQ音乐、网易云、酷狗付费音乐解析下载</div>
+                <div class="input-box">
+                    <input type="text" id="musicUrl" placeholder="粘贴链接 / 输入歌曲名称">
+                </div>
+                <button class="btn" onclick="parseMusic()">解析获取音乐</button>
+                <div class="result" id="musicRes"></div>
+            </div>
+
+            <!-- 影视解析 -->
+            <div class="panel" id="movie">
+                <div class="panel-title">影视解析</div>
+                <div class="tips">爱奇艺/腾讯/优酷/B站等VIP视频在线播放</div>
+                <div class="api-select">
+                    <div class="api-option active" data-api="1">接口一</div>
+                    <div class="api-option" data-api="2">接口二</div>
+                    <div class="api-option" data-api="3">接口三</div>
+                </div>
+                <div class="input-box">
+                    <input type="text" id="movieKey" placeholder="粘贴视频链接 / 输入剧名">
+                </div>
+                <button class="btn" onclick="parseMovie()">立即解析</button>
+                <div class="video-box" id="moviePlayer">
+                    <iframe srcdoc="<div style='color:#fff;text-align:center;line-height:350px'>视频播放区域</div>"></iframe>
+                </div>
+                <div class="result" id="movieRes"></div>
+            </div>
+
+            <!-- 短链接生成 -->
+            <div class="panel" id="shorturl">
+                <div class="panel-title">短链接生成</div>
+                <div class="tips">长网址一键压缩，方便分享传播</div>
+                <div class="input-box">
+                    <textarea id="longUrl" placeholder="粘贴需要缩短的长网址"></textarea>
+                </div>
+                <button class="btn" onclick="createShortUrl()">生成短链接</button>
+                <div class="result" id="shortRes"></div>
+            </div>
+
+            <!-- 网名生成 -->
+            <div class="panel" id="nickname">
+                <div class="panel-title">网名生成</div>
+                <div class="tips">个性网名、文艺签名随机生成</div>
+                <div class="flex-row">
+                    <button class="btn" onclick="getNick()">随机个性网名</button>
+                    <button class="btn" onclick="getSign()">随机个性签名</button>
+                </div>
+                <div class="result" id="nickRes"></div>
+            </div>
+
+            <!-- 日常查询 -->
+            <div class="panel" id="query">
+                <div class="panel-title">日常查询</div>
+                <div class="tips">手机号归属地查询、年度天数统计</div>
+                <div class="input-box">
+                    <input type="text" id="phoneNum" placeholder="输入手机号查询归属地">
+                </div>
+                <div class="flex-row">
+                    <button class="btn" onclick="searchPhone()">查询归属地</button>
+                    <button class="btn" onclick="calcDay()">计算今日天数</button>
+                </div>
+                <div class="result" id="queryRes"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部信息 -->
+    <div class="footer">
+        网站信息 版权所有 © 2024 ToolBox 工具合集
+    </div>
+
+<script>
+// 左侧菜单切换
+const menuItems = document.querySelectorAll('.menu-item');
+const panels = document.querySelectorAll('.panel');
+menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+        let targetPanel = item.dataset.panel;
+        menuItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        panels.forEach(p => p.classList.remove('show'));
+        document.getElementById(targetPanel).classList.add('show');
+    });
+});
+
+// 短视频去水印接口切换
+let currentApi = 1;
+const watermarkApiOpts = document.querySelectorAll('#watermark .api-option');
+watermarkApiOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+        watermarkApiOpts.forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        currentApi = parseInt(opt.dataset.api);
+    });
+});
+
+// 1.文库解析
+const AES_KEY = CryptoJS.enc.Utf8.parse("dufy20170328aes");
+function getDocId(url) {
+    let reg = /view\/([\w]+)/;
+    let res = url.match(reg);
+    return res ? res[1] : null;
+}
+function aesDecrypt(data) {
+    try {
+        let decode = CryptoJS.AES.decrypt(data, AES_KEY, {
+            mode: CryptoJS.mode.ECB,
+            padding: CryptoJS.pad.Pkcs7
+        });
+        return decode.toString(CryptoJS.enc.Utf8);
+    } catch (e) {
+        return "解密失败，密钥失效";
+    }
+}
+async function parseWenku() {
+    let url = document.getElementById('wenkuUrl').value.trim();
+    let cookie = document.getElementById('wenkuCookie').value.trim();
+    let resDom = document.getElementById('wenkuRes');
+    resDom.innerText = "正在解析中，请稍候...";
+    let docId = getDocId(url);
+    if (!docId) {
+        resDom.innerText = "链接格式错误，请检查网址";
+        return;
+    }
+    let headers = {
+        "User-Agent": "Mozilla/5.0 Mobile Chrome",
+        "Referer": "https://wenku.baidu.com/"
+    };
+    if (cookie) headers.Cookie = cookie;
+    try {
+        let resp = await fetch(`https://wenku.baidu.com/ajax/pc/loadSharePage?docId=${docId}&pn=1`, { headers });
+        let data = await resp.json();
+        if (data.err !== 0) {
+            resDom.innerText = `获取失败：${data.msg}`;
+            return;
+        }
+        let content = aesDecrypt(data.content);
+        resDom.innerText = `文档内容：\n${content}`;
+    } catch (err) {
+        resDom.innerText = "跨域请求失败，更换浏览器重试";
+    }
+}
+
+// 2.短视频去水印 稳定接口
+async function parseWaterMark() {
+    let link = document.getElementById('videoUrl').value.trim();
+    let resDom = document.getElementById('videoRes');
+    if (!link) {
+        resDom.innerText = "请粘贴短视频分享链接";
+        return;
+    }
+    resDom.innerText = "解析中...";
+
+    let apiList = [
+        `https://api.douyin.wtf/api?url=${encodeURIComponent(link)}`,
+        `https://api.douyin123.com/api?url=${encodeURIComponent(link)}`,
+        `https://jx.618g.com/dy?url=${encodeURIComponent(link)}`
+    ];
+    let targetApi = apiList[currentApi - 1];
+
+    try {
+        let res = await fetch(targetApi);
+        let json = await res.json();
+        let videoUrl = json.video || json.play_addr || json.data?.url;
+        if (videoUrl) {
+            resDom.innerHTML = `接口${currentApi}解析成功！<br><a href="${videoUrl}" style="color:#1677ff" target="_blank">点击下载无水印视频</a>`;
+        } else {
+            resDom.innerText = "当前接口解析失败，切换其他接口重试";
+        }
+    } catch (e) {
+        resDom.innerText = `接口${currentApi}请求异常，换接口尝试`;
+    }
+}
+
+// 3.音乐解析 可用线路
+async function parseMusic() {
+    let text = document.getElementById('musicUrl').value.trim();
+    let resDom = document.getElementById('musicRes');
+    if (!text) {
+        resDom.innerText = "请输入歌曲链接或歌名";
+        return;
+    }
+    resDom.innerText = "音乐解析中...";
+    try {
+        let api = `https://music.138000.xyz/api/search?name=${encodeURIComponent(text)}`;
+        let res = await fetch(api);
+        let data = await res.json();
+        if (data.code === 200 && data.data.length > 0) {
+            let item = data.data[0];
+            resDom.innerHTML = `
+                歌曲：${item.title}<br>
+                歌手：${item.author}<br>
+                <a href="${item.url}" style="color:#1677ff" target="_blank">点击下载音频</a>
+            `;
+        } else {
+            resDom.innerText = "未检索到对应音乐";
+        }
+    } catch (e) {
+        resDom.innerText = "音乐接口请求失败";
+    }
+}
+
+// 4.影视解析 三线路修复完毕
+let movieApi = 1;
+const movieApiOpts = document.querySelectorAll('#movie .api-option');
+movieApiOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+        movieApiOpts.forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        movieApi = parseInt(opt.dataset.api);
+    });
+});
+const movieApiList = [
+    'https://jx.xmflv.com/m3u8?url=',
+    'https://jx.17zyvip.com/vip?url=',
+    'https://shturl.cc/1UTa5fseknfL7OXh/?url='
+];
+function parseMovie() {
+    let key = document.getElementById('movieKey').value.trim();
+    let resDom = document.getElementById('movieRes');
+    let player = document.querySelector('#moviePlayer iframe');
+    if (!key) {
+        resDom.innerText = "请输入视频链接或剧名";
+        return;
+    }
+    resDom.innerText = `正在使用接口${movieApi}解析...`;
+    let url = movieApiList[movieApi - 1] + encodeURIComponent(key);
+    player.src = url;
+}
+
+// 5.短链接生成
+async function createShortUrl() {
+    let longUrl = document.getElementById('longUrl').value.trim();
+    let resDom = document.getElementById('shortRes');
+    if (!longUrl) {
+        resDom.innerText = "请输入需要缩短的网址";
+        return;
+    }
+    resDom.innerText = "生成中...";
+    try {
+        let api = `https://suo.im/api.php?url=${encodeURIComponent(longUrl)}`;
+        let res = await fetch(api);
+        let shortLink = await res.text();
+        if (shortLink.startsWith('http')) {
+            resDom.innerHTML = `缩短成功：<br><a href="${shortLink}" style="color:#1677ff" target="_blank">${shortLink}</a>`;
+        } else {
+            resDom.innerText = "生成短链接失败";
+        }
+    } catch (e) {
+        resDom.innerText = "接口请求出错";
+    }
+}
+
+// 6.网名签名生成
+const nickList = ["山野寻风", "晚风叙旧", "人间过客", "落日邮局", "星河入梦", "温一壶月光", "赴一场山海", "浅忆流年"];
+const signList = ["前路漫漫亦灿灿，往事堪堪亦澜澜", "把烦心事丢掉，腾出地方装鲜花", "心怀善意，万事皆可期待"];
+function getNick() {
+    let randomNick = nickList[Math.floor(Math.random() * nickList.length)];
+    document.getElementById('nickRes').innerText = `推荐网名：${randomNick}`;
+}
+function getSign() {
+    let randomSign = signList[Math.floor(Math.random() * signList.length)];
+    document.getElementById('nickRes').innerText = `个性签名：${randomSign}`;
+}
+
+// 7.日常查询工具
+async function searchPhone() {
+    let phone = document.getElementById('phoneNum').value.trim();
+    let resDom = document.getElementById('queryRes');
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
+        resDom.innerText = "手机号格式不正确";
+        return;
+    }
+    try {
+        let api = `https://api.zhai77.cn/api/phone?phone=${phone}`;
+        let res = await fetch(api);
+        let data = await res.json();
+        if (data.code === 200) {
+            resDom.innerText = `归属地：${data.province} ${data.city}\n运营商：${data.isp}`;
+        } else {
+            resDom.innerText = "暂无查询数据";
+        }
+    } catch (e) {
+        resDom.innerText = "查询接口超时";
+    }
+}
+function calcDay() {
+    let resDom = document.getElementById('queryRes');
+    let now = new Date();
+    let year = now.getFullYear();
+    let start = new Date(year, 0, 1);
+    let diff = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+    resDom.innerText = `${year}年今日是本年度第${diff}天`;
+}
+</script>
+</body>
+</html>
